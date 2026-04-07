@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ livre.titre }} - Détail{% endblock %}
+
+{% block body %}
+    <div style="position: absolute; top: 20px; right: 20px;">
+        <a href="{{ path('user_dashboard') }}" style="padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">Retour au tableau de bord</a>
+    </div>
+
+    <div style="max-width: 1200px; margin: 0 auto; padding: 24px;">
+        {% for message in app.flashes('success') %}
+            <div style="padding: 12px 16px; border-radius: 8px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; margin-bottom: 16px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div style="padding: 12px 16px; border-radius: 8px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; margin-bottom: 16px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 32px; margin-bottom: 40px;">
+            <!-- Image et note moyenne -->
+            <div style="text-align: center;">
+                {% if livre.image %}
+                    <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" style="width: 250px; height: 350px; object-fit: cover; border-radius: 8px; border: 2px solid #dee2e6; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                {% else %}
+                    <div style="width: 250px; height: 350px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 2px solid #dee2e6; background: #f8f9fa; color: #6c757d; font-size: 48px;">📚</div>
+                {% endif %}
+
+                {% if averageRating > 0 %}
+                    <div style="margin-top: 16px; padding: 8px 16px; background: #fff3cd; border-radius: 20px; display: inline-block;">
+                        <span style="font-weight: bold; color: #856404;">⭐ {{ averageRating }}/5</span>
+                        <span style="color: #856404; font-size: 12px;">({{ commentaires|length }} avis)</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Informations du livre -->
+            <div>
+                <h1 style="margin-bottom: 8px; color: #333;">{{ livre.titre }}</h1>
+                <p style="font-size: 18px; color: #666; margin-bottom: 8px;"><strong>Auteur :</strong> {{ livre.auteur }}</p>
+                <p style="font-size: 16px; color: #666; margin-bottom: 8px;"><strong>Catégorie :</strong> {{ livre.categorie.nom }}</p>
+                <p style="font-size: 16px; color: #666; margin-bottom: 8px;"><strong>Langue :</strong> {{ livre.langue }}</p>
+                <p style="font-size: 16px; color: #666; margin-bottom: 16px;"><strong>Stock disponible :</strong> {{ livre.stock }}</p>
+
+                <!-- Indicateurs favori et réservation -->
+                <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                    {% if isFavori %}
+                        <span style="padding: 8px 16px; background: #ffc107; color: white; border-radius: 20px; font-size: 14px; font-weight: bold;">❤️ En favori</span>
+                    {% endif %}
+
+                    {% if isReserve %}
+                        <span style="padding: 8px 16px; background: #28a745; color: white; border-radius: 20px; font-size: 14px; font-weight: bold;">📅 Réservé</span>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                {% if livre.description %}
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <h3 style="margin-top: 0; color: #333;">Description</h3>
+                        <p style="margin: 0; color: #555; line-height: 1.6;">{{ livre.description }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulaire de réservation -->
+        {% if livre.stock > 0 %}
+            <div style="background: #f8f9fa; padding: 24px; border-radius: 12px; margin-bottom: 32px; border: 1px solid #e9ecef;">
+                <h2 style="margin-top: 0; color: #333;">Réserver ce livre</h2>
+                <p style="color: #666; margin-bottom: 20px;">Choisissez la date de début de votre réservation (7 jours automatiquement).</p>
+
+                <form method="post" action="{{ path('user_reservation_new', {livre: livre.id}) }}">
+                    <div style="margin-bottom: 16px;">
+                        <label for="reservation_dateDebut" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Date de début :</label>
+                        <input type="date" id="reservation_dateDebut" name="reservation[dateDebut]" required style="padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; width: 200px;">
+                    </div>
+
+                    <button type="submit" style="padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                        Réserver maintenant
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div style="background: #f8d7da; padding: 20px; border-radius: 8px; margin-bottom: 32px; border: 1px solid #f5c6cb;">
+                <p style="margin: 0; color: #721c24; font-weight: bold;">📚 Ce livre n'est actuellement pas disponible.</p>
+            </div>
+        {% endif %}
+
+        <!-- Section commentaires et notes -->
+        <div style="background: #f8f9fa; padding: 24px; border-radius: 12px; border: 1px solid #e9ecef;">
+            <h2 style="margin-top: 0; color: #333;">Avis et commentaires</h2>
+
+            <!-- Formulaire de commentaire (seulement si livre terminé) -->
+            {% if canComment %}
+                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #dee2e6;">
+                    <h3 style="margin-top: 0; color: #333;">Donner votre avis</h3>
+                   <form method="post" action="{{ path('user_commentaire_add', {livre: livre.id}) }}">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Note (sur 5) :</label>
+                            <select name="note" required style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                                <option value="">Choisir une note</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                                <option value="3">⭐⭐⭐ (3/5)</option>
+                                <option value="2">⭐⭐ (2/5)</option>
+                                <option value="1">⭐ (1/5)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Votre commentaire :</label>
+                            <textarea name="contenu" rows="4" style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                        </div>
+
+                        <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            Publier l'avis
+                        </button>
+                    </form>
+                </div>
+            {% elseif isReserve %}
+                <div style="background: #fff3cd; padding: 16px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #ffeaa7;">
+                    <p style="margin: 0; color: #856404;">📝 Vous pourrez donner votre avis une fois la réservation terminée.</p>
+                </div>
+            {% endif %}
+
+            <!-- Liste des commentaires -->
+            {% if commentaires is not empty %}
+                <div style="space-y: 16px;">
+                    <h3 style="color: #333;">Avis des lecteurs ({{ commentaires|length }})</h3>
+
+                    {% for commentaire in commentaires %}
+                        <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dee2e6;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-weight: bold; color: #333;">{{ commentaire.user.prenom }} {{ commentaire.user.nom }}</span>
+                                <div>
+                                    {% for i in 1..5 %}
+                                        {% if i <= commentaire.note %}
+                                            <span style="color: #ffc107;">⭐</span>
+                                        {% else %}
+                                            <span style="color: #dee2e6;">☆</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span style="margin-left: 8px; font-size: 12px; color: #666;">{{ commentaire.createdAt|date('d/m/Y') }}</span>
+                                </div>
+                            </div>
+                            <p style="margin: 0; color: #555; line-height: 1.5;">{{ commentaire.contenu }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <p>📝 Aucun avis pour le moment.</p>
+                    <p style="font-size: 14px;">Soyez le premier à donner votre avis après avoir lu ce livre !</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

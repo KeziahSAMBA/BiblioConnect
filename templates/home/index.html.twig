@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Bienvenue sur BiblioConnect! 📚</h1>
+
+    <p>Veuillez vous connecter pour accéder à votre bibliothèque.</p>
+    <ul>
+        <li><a href="{{ path('app_login') }}">Se connecter</a></li>
+        <li><a href="{{ path('app_register') }}">S'inscrire</a></li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div style="display: flex; height: 100vh; max-width: 1400px; margin: 0 auto;">
+
+    {# PANNEAU GAUCHE - Liste users (30%) #}
+    <div style="width: 30%; border-right: 1px solid #dee2e6; padding: 20px; overflow-y: auto; background: #f8f9fa;">
+        <h2 style="margin-top: 0; font-size: 18px;">Utilisateurs</h2>
+        {% for u in users %}
+            <a href="{{ path('librarian_user_reservations', {id: u.id}) }}"
+               style="display: block; padding: 14px; margin-bottom: 8px; background: {{ u.id == userCible.id ? '#0d6efd' : 'white' }}; border: 1px solid #dee2e6; border-radius: 8px; text-decoration: none; color: {{ u.id == userCible.id ? 'white' : '#333' }};">
+                <div style="font-weight: bold;">{{ u.prenom }} {{ u.nom }}</div>
+                <div style="font-size: 12px; color: {{ u.id == userCible.id ? '#cce' : '#666' }}; margin-top: 4px;">{{ u.email }}</div>
+                <div style="margin-top: 6px; font-size: 12px;">
+                    <span style="padding: 2px 8px; border-radius: 999px; background: {{ u.id == userCible.id ? 'rgba(255,255,255,0.3)' : '#d4edda' }}; color: {{ u.id == userCible.id ? 'white' : '#155724' }};">
+                        {{ u.reservations|length }} réservation{{ u.reservations|length > 1 ? 's' : '' }}
+                    </span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    {# PANNEAU DROIT - Réservations du user (70%) #}
+    <div style="width: 70%; padding: 20px; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1 style="margin: 0;">{{ userCible.prenom }} {{ userCible.nom }}</h1>
+                <p style="margin: 4px 0 0 0; color: #666;">{{ userCible.email }}</p>
+            </div>
+            <a href="{{ path('librarian_dashboard') }}" style="padding: 8px 16px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-size: 13px;">← Retour</a>
+        </div>
+
+        {% if reservations is not empty %}
+            <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <thead>
+                    <tr style="background: #f1f5f9; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 12px; text-align: left;">Livre</th>
+                        <th style="padding: 12px; text-align: left;">Date début</th>
+                        <th style="padding: 12px; text-align: left;">Date fin</th>
+                        <th style="padding: 12px; text-align: center;">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resa in reservations %}
+                        <tr style="border-bottom: 1px solid #e8eaed;">
+                            <td style="padding: 12px;">{{ resa.livre.titre }}</td>
+                            <td style="padding: 12px;">{{ resa.dateDebut|date('d/m/Y') }}</td>
+                            <td style="padding: 12px;">{{ resa.dateFin|date('d/m/Y') }}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                {% if resa.statut == 'actif' %}
+                                    <span style="padding: 4px 10px; border-radius: 999px; background: #d4edda; color: #155724;">Actif</span>
+                                {% elseif resa.statut == 'en_attente' %}
+                                    <span style="padding: 4px 10px; border-radius: 999px; background: #fff3cd; color: #856404;">En attente</span>
+                                {% else %}
+                                    <span style="padding: 4px 10px; border-radius: 999px; background: #e2e3e5; color: #383d41;">Terminé</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 12px; color: #666;">
+                Cet utilisateur n'a aucune réservation.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

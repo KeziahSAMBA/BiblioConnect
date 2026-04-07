@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter une catégorie{% endblock %}
+
+{% block body %}
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="margin-bottom: 20px;">
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_dashboard') : path('librarian_dashboard') }}" style="padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">
+   ← Retour au tableau de bord
+</a>
+        </div>
+
+        <h1>Ajouter une nouvelle catégorie</h1>
+
+        {{ include('categorie/_form.html.twig') }}
+    </div>
+{% endblock %}

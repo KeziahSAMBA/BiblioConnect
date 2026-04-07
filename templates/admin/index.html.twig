@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div style="position: absolute; top: 20px; right: 20px;">
+    <a href="{{ path('app_logout') }}" style="padding: 10px 20px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">Déconnexion</a>
+</div>
+
+<div style="max-width: 1400px; margin: 0 auto; padding: 24px;">
+
+    <h1 style="margin-top: 0;">⚙️ Espace Administration</h1>
+    <p>Bienvenue <strong>{{ user.prenom }} {{ user.nom }}</strong></p>
+
+    {% for message in app.flashes('success') %}
+        <div class="flash-message" style="padding: 12px 16px; border-radius: 8px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; margin-bottom: 16px;">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-message" style="padding: 12px 16px; border-radius: 8px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; margin-bottom: 16px;">{{ message }}</div>
+    {% endfor %}
+
+    {# STATS #}
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="padding: 16px; background: #d4edda; border-radius: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold;">{{ livres|length }}</div>
+            <div style="color: #155724; font-size: 13px;">📚 Livres</div>
+        </div>
+        <div style="padding: 16px; background: #fff3cd; border-radius: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold;">{{ reservationsEnAttente|length }}</div>
+            <div style="color: #856404; font-size: 13px;">⏳ En attente</div>
+        </div>
+        <div style="padding: 16px; background: #cce5ff; border-radius: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold;">{{ reservationsActives|length }}</div>
+            <div style="color: #004085; font-size: 13px;">✅ Actives</div>
+        </div>
+        <div style="padding: 16px; background: #e2e3e5; border-radius: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold;">{{ users|length }}</div>
+            <div style="color: #383d41; font-size: 13px;">👥 Utilisateurs</div>
+        </div>
+    </div>
+
+    {# GRID PRINCIPAL 2 colonnes #}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+        {# CATALOGUE #}
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 style="margin: 0; font-size: 16px;">📚 Catalogue</h2>
+                <div style="display: flex; gap: 6px;">
+                    <a href="{{ path('app_livre_new') }}" style="padding: 5px 10px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-size: 12px;">+ Livre</a>
+                    <a href="{{ path('app_categorie_new') }}" style="padding: 5px 10px; background: #17a2b8; color: white; text-decoration: none; border-radius: 6px; font-size: 12px;">+ Catégorie</a>
+                </div>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                        <tr style="border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 8px; text-align: left; font-size: 12px;">Titre</th>
+                            <th style="padding: 8px; text-align: left; font-size: 12px;">Auteur</th>
+                            <th style="padding: 8px; text-align: left; font-size: 12px;">Catégorie</th>
+                            <th style="padding: 8px; text-align: left; font-size: 12px;">Langue</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">Stock</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livre in livres %}
+                            <tr style="border-bottom: 1px solid #e8eaed;">
+                                <td style="padding: 8px; font-size: 12px;">{{ livre.titre }}</td>
+                                <td style="padding: 8px; font-size: 12px;">{{ livre.auteur }}</td>
+                                <td style="padding: 8px; font-size: 12px;">{{ livre.categorie.nom }}</td>
+                                <td style="padding: 8px; font-size: 12px;">{{ livre.langue }}</td>
+                                <td style="padding: 8px; text-align: center;">
+                                    <span style="padding: 2px 6px; border-radius: 999px; background: {% if livre.stock <= 0 %}#f8d7da{% elseif livre.stock > 5 %}#d4edda{% else %}#fff3cd{% endif %}; font-size: 11px;">{{ livre.stock }}</span>
+                                </td>
+                                <td style="padding: 8px; text-align: center;">
+                                    <a href="{{ path('app_livre_edit', {id: livre.id}) }}" style="padding: 3px 8px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; margin-right: 3px;">Editer</a>
+                                    <form method="POST" action="{{ path('app_livre_delete', {id: livre.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce livre ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ livre.id) }}">
+                                        <button type="submit" style="padding: 3px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# UTILISATEURS + HISTORIQUE #}
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px;">
+            <h2 style="margin-top: 0; font-size: 16px;">👥 Utilisateurs</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% for u in users %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 6px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: bold; font-size: 13px;">{{ u.prenom }} {{ u.nom }}</div>
+                            <div style="font-size: 11px; color: #666;">{{ u.email }}</div>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <form method="POST" action="{{ path('admin_user_role', {id: u.id}) }}" style="display: flex; gap: 4px;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('role' ~ u.id) }}">
+                                <select name="role" style="padding: 3px 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 11px;">
+                                    <option value="ROLE_USER" {% if 'ROLE_USER' in u.roles and 'ROLE_LIBRARIAN' not in u.roles and 'ROLE_ADMIN' not in u.roles %}selected{% endif %}>User</option>
+                                    <option value="ROLE_LIBRARIAN" {% if 'ROLE_LIBRARIAN' in u.roles %}selected{% endif %}>Librarian</option>
+                                    <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in u.roles %}selected{% endif %}>Admin</option>
+                                </select>
+                                <button type="submit" style="padding: 3px 8px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Valider</button>
+                            </form>
+                            <a href="{{ path('admin_user_reservations', {id: u.id}) }}" style="padding: 3px 8px; background: #17a2b8; color: white; text-decoration: none; border-radius: 4px; font-size: 11px;">Afficher</a>
+                            <form method="POST" action="{{ path('admin_user_delete', {id: u.id}) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user' ~ u.id) }}">
+                                <button type="submit" style="padding: 3px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# RESERVATIONS EN ATTENTE #}
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px;">
+            <h2 style="margin-top: 0; font-size: 16px;">⏳ Réservations en attente</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% if reservationsEnAttente is not empty %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                            <tr style="border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Utilisateur</th>
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Livre</th>
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Début</th>
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Fin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resa in reservationsEnAttente %}
+                                <tr style="border-bottom: 1px solid #e8eaed;">
+                                    <td style="padding: 8px; font-size: 12px;">{{ resa.user.prenom }} {{ resa.user.nom }}</td>
+                                    <td style="padding: 8px; font-size: 12px;">{{ resa.livre.titre }}</td>
+                                    <td style="padding: 8px; font-size: 12px;">{{ resa.dateDebut|date('d/m/Y') }}</td>
+                                    <td style="padding: 8px; font-size: 12px;">{{ resa.dateFin|date('d/m/Y') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="color: #666; font-size: 13px;">Aucune réservation en attente.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# COMMENTAIRES #}
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px;">
+            <h2 style="margin-top: 0; font-size: 16px;">💬 Modération commentaires</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% if commentaires is not empty %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                            <tr style="border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">User</th>
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Livre</th>
+                                <th style="padding: 8px; text-align: center; font-size: 12px;">Note</th>
+                                <th style="padding: 8px; text-align: left; font-size: 12px;">Commentaire</th>
+                                <th style="padding: 8px; text-align: center; font-size: 12px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commentaire in commentaires %}
+                                <tr style="border-bottom: 1px solid #e8eaed;">
+                                    <td style="padding: 8px; font-size: 12px;">{{ commentaire.user.prenom }} {{ commentaire.user.nom }}</td>
+                                    <td style="padding: 8px; font-size: 12px;">{{ commentaire.livre.titre }}</td>
+                                    <td style="padding: 8px; text-align: center; font-size: 12px;">{{ commentaire.note }}/5 ⭐</td>
+                                    <td style="padding: 8px; font-size: 12px;">{{ commentaire.contenu|slice(0, 40) }}{% if commentaire.contenu|length > 40 %}...{% endif %}</td>
+                                    <td style="padding: 8px; text-align: center;">
+                                        <form method="POST" action="{{ path('admin_commentaire_delete', {id: commentaire.id}) }}" onsubmit="return confirm('Supprimer ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ commentaire.id) }}">
+                                            <button type="submit" style="padding: 3px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="color: #666; font-size: 13px;">Aucun commentaire.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    setTimeout(function() {
+        document.querySelectorAll('.flash-message').forEach(function(el) {
+            el.style.transition = 'opacity 0.5s ease';
+            el.style.opacity = '0';
+            setTimeout(function() { el.remove(); }, 500);
+        });
+    }, 2000);
+</script>
+
+{% endblock %}

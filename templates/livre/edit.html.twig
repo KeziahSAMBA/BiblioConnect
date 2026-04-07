@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Livre{% endblock %}
+
+{% block body %}
+    <h1>Edit Livre</h1>
+
+    {{ include('livre/_form.html.twig', {'button_label': 'Update'}) }}
+<p>
+    <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_dashboard') : path('librarian_dashboard') }}" style="padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">
+        ← Retour au tableau de bord
+    </a>
+</p>
+    {{ include('livre/_delete_form.html.twig') }}
+{% endblock %}

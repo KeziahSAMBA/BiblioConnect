@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div style="position: absolute; top: 20px; right: 20px;">
+    <a href="{{ path('app_logout') }}" style="padding: 10px 20px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">Déconnexion</a>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 24px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h1 style="margin: 0;">📋 Historique de {{ userCible.prenom }} {{ userCible.nom }}</h1>
+            <p style="margin: 4px 0 0 0; color: #666;">{{ userCible.email }}</p>
+        </div>
+        <a href="{{ path('admin_dashboard') }}" style="padding: 8px 16px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-size: 13px;">← Retour</a>
+    </div>
+
+    {% if reservations is not empty %}
+        <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <thead>
+                <tr style="background: #f1f5f9; border-bottom: 2px solid #dee2e6;">
+                    <th style="padding: 12px; text-align: left;">Livre</th>
+                    <th style="padding: 12px; text-align: left;">Date début</th>
+                    <th style="padding: 12px; text-align: left;">Date fin</th>
+                    <th style="padding: 12px; text-align: center;">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resa in reservations %}
+                    <tr style="border-bottom: 1px solid #e8eaed;">
+                        <td style="padding: 12px;">{{ resa.livre.titre }}</td>
+                        <td style="padding: 12px;">{{ resa.dateDebut|date('d/m/Y') }}</td>
+                        <td style="padding: 12px;">{{ resa.dateFin|date('d/m/Y') }}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            {% if resa.statut == 'actif' %}
+                                <span style="padding: 4px 10px; border-radius: 999px; background: #d4edda; color: #155724;">Actif</span>
+                            {% elseif resa.statut == 'en_attente' %}
+                                <span style="padding: 4px 10px; border-radius: 999px; background: #fff3cd; color: #856404;">En attente</span>
+                            {% else %}
+                                <span style="padding: 4px 10px; border-radius: 999px; background: #e2e3e5; color: #383d41;">Terminé</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 12px; color: #666;">
+            Cet utilisateur n'a aucune réservation.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
